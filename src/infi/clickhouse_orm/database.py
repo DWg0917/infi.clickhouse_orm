@@ -134,15 +134,26 @@ class Database(object):
     def create_database(self):
         '''
         Creates the database on the ClickHouse server if it does not already exist.
+        Creates the database on single node or on cluster.
         '''
-        self._send('CREATE DATABASE IF NOT EXISTS `%s`' % self.db_name)
+        sql = f"CREATE DATABASE IF NOT EXISTS '{self.db_name}'"
+        if self.cluster:
+            sql += f" ON CLUSTER '{self.cluster}'"
+
+        # self._send('CREATE DATABASE IF NOT EXISTS `%s`' % self.db_name)
+        self._send(sql)
         self.db_exists = True
 
     def drop_database(self):
         '''
         Deletes the database on the ClickHouse server.
+        Deletes the database on single node or on cluster.
         '''
-        self._send('DROP DATABASE `%s`' % self.db_name)
+        sql = f"DROP DATABASE IF EXISTS '{self.db_name}'"
+        if self.cluster:
+            sql += f" ON CLUSTER '{self.cluster}'"
+        # self._send('DROP DATABASE `%s`' % self.db_name)
+        self._send(sql)
         self.db_exists = False
 
     def create_table(self, model_class):
